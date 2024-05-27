@@ -6,7 +6,7 @@ import { PrivateRoutes, PublicRoute } from "./hooks/use-protected-route";
 
 function App() {
   return (
-    <>
+    <div className="">
       <Routes>
         <Route element={<PrivateRoutes />}>
           <Route
@@ -29,7 +29,7 @@ function App() {
           />
         </Route>
       </Routes>
-    </>
+    </div>
   );
 }
 

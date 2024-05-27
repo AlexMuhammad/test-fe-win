@@ -12,3 +12,7 @@ export const putAccessToken = (token: string) => {
 export const isAuthenticated = (): boolean => {
   return !!localStorage.getItem('token');
 };
+
+export const avatarFallbackName = (name: string) => {
+  return name.charAt(0)
+}
