@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
+  Dialog,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -43,13 +44,14 @@ const FormSchema = z.object({
     message: "Desc character minimal 5 character(s)",
   }),
   image: z.string(),
-  price: z.string(),
+  price: z.string().min(1, {
+    message: "Please field price!",
+  }),
 });
 
 const FormDialog = ({ data: productData }: { data?: IFormDialog }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { description, image, name, price } = productData || {};
-  const { loading } = useSelector((state: RootState) => state.products);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -64,9 +66,16 @@ const FormDialog = ({ data: productData }: { data?: IFormDialog }) => {
 
   useEffect(() => {
     if (productData) {
-      form.setValue("name", name!);
-      form.setValue("description", description!);
-      form.setValue("price", price!);
+      form.setValue("name", name!, {
+        shouldValidate: true,
+      });
+      form.setValue("description", description!, {
+        shouldValidate: true,
+      });
+      form.setValue("price", price!, {
+        shouldValidate: true,
+      });
+      form.setValue("image", image!);
       setIsImageExist(image! ? true : false);
     }
   }, [productData]);
@@ -76,6 +85,8 @@ const FormDialog = ({ data: productData }: { data?: IFormDialog }) => {
       setIsImageExist(image ? true : false);
     }
   }, [isImageExist]);
+
+  console.log("image", image);
 
   const onSubmit = async (data: any) => {
     const { price, name, description } = data;
@@ -219,11 +230,9 @@ const FormDialog = ({ data: productData }: { data?: IFormDialog }) => {
               )}
             />
           )}
-          <DialogClose asChild>
-            <Button type="submit" className="w-full">
-              Submit
-            </Button>
-          </DialogClose>
+          <Button type="submit" className="w-full">
+            Submit
+          </Button>
         </form>
       </Form>
     </DialogContent>
