@@ -9,13 +9,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select"
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import {useNavigate} from "react-router-dom"
 import { checkMail } from "@/lib/regex";
 import { useToast } from "@/components/ui/use-toast";
-import { loginUser } from "@/redux/auth.slice";
+import { loginUser, registerUser } from "@/redux/auth.slice";
 import { putAccessToken } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -26,9 +33,11 @@ const FormSchema = z.object({
   password: z.string().min(3, {
     message: "Password character minimal 5 character(s)",
   }),
+  gender: z.enum(["male", "female", ""]),
+  name: z.string().min(3)
 });
 
-function LoginPage() {
+function RegisterPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
@@ -37,25 +46,29 @@ function LoginPage() {
     defaultValues: {
       email: "",
       password: "",
+      gender: "",
+      name: ""
     },
+    mode: 'onChange'
   });
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     try {
       const response = await dispatch(
-        loginUser({
+        registerUser({
           email: data.email,
           password: data.password,
+          gender: data.gender as "male" | "female",
+          name: data.name
         })
       );
 
       if (response.meta.requestStatus === "fulfilled" && response?.payload?.success) {
-        putAccessToken(response.payload.token);
         toast({
           title: response.payload.message,
           variant: "success",
         });
-        navigate('/')
+        navigate('/login')
       } else {  
         toast({
           title: response?.payload?.response?.data?.message,
@@ -76,6 +89,23 @@ function LoginPage() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="w-full md:w-1/3 space-y-6 p-10 bg-white rounded-md"
         >
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Username"
+                    {...field}
+                    className="focus-visible:ring-violet-700 focus-visible:ring-1"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="email"
@@ -111,16 +141,37 @@ function LoginPage() {
               </FormItem>
             )}
           />
+          <FormField
+          control={form.control}
+          name="gender"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Gender</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="focus-visible:ring-violet-700 focus-visible:ring-1">
+                    <SelectValue placeholder="Choose your gender"/>
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
           <Button
             type="submit"
             className="w-full bg-violet-700 hover:bg-violet-400"
           >
-            Login
+            Register
           </Button>
           <p className="text-sm text-center select-none">
-            Don't have an account?{" "}
-            <span className="font-bold text-violet-700 transition-all duration-300 hover:underline hover:cursor-pointer" onClick={() => navigate('/register')}>
-              Sign up
+            Already have an account?{" "}
+            <span className="font-bold text-violet-700 transition-all duration-300 hover:underline hover:cursor-pointer" onClick={() => navigate('/login')}>
+              Sign In
             </span>
           </p>
         </form>
@@ -129,4 +180,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default RegisterPage;

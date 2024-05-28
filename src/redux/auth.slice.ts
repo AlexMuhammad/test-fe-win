@@ -28,6 +28,26 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+export const registerUser = createAsyncThunk(
+  "auth/register",
+  async (
+    { email, password, name, gender }: { email: string; password: string, name: string, gender: "male" | "female" }, {rejectWithValue}
+  ) => {
+    try {
+      const response = await axiosInstance.post("/auth/register", {
+        email,
+        password,
+        name,
+        gender
+      });
+
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -43,7 +63,16 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state) => {
         state.loading = false;
-      });
+      })
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(registerUser.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(registerUser.rejected, (state) => {
+        state.loading = false;
+      })
   },
 });
 

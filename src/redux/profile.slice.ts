@@ -1,5 +1,6 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "./api";
+import type { IProfilePayload } from "@/types";
 
 interface ProfileInitialState {
   data: Record<any, any>;
@@ -33,7 +34,7 @@ const profileSlice = createSlice({
       .addCase(profileUser.pending, (state) => {
         state.loading = true;
       })
-      .addCase(profileUser.fulfilled, (state, action) => {
+      .addCase(profileUser.fulfilled, (state, action: PayloadAction<IProfilePayload>) => {
         state.data = action.payload;
         state.loading = false;
       })
