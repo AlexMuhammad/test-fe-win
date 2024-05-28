@@ -1,3 +1,4 @@
+import { isAuthenticated } from "@/lib/utils";
 import axios from "axios";
 
 const axiosInstance = axios.create({
@@ -22,7 +23,7 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (error.response && error.response.status === 401 && !isAuthenticated()) {
       window.location.href = "/login";
     }
     return Promise.reject(error);

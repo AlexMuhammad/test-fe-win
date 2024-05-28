@@ -1,6 +1,7 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../redux/index";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import {
   Form,
   FormControl,
@@ -10,20 +11,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
-import {useNavigate} from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import { checkMail } from "@/lib/regex";
 import { useToast } from "@/components/ui/use-toast";
-import { loginUser, registerUser } from "@/redux/auth.slice";
-import { putAccessToken } from "@/lib/utils";
+import { registerUser } from "@/redux/auth.slice";
 import { Button } from "@/components/ui/button";
 
 const FormSchema = z.object({
@@ -34,22 +34,23 @@ const FormSchema = z.object({
     message: "Password character minimal 5 character(s)",
   }),
   gender: z.enum(["male", "female", ""]),
-  name: z.string().min(3)
+  name: z.string().min(3),
 });
 
 function RegisterPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
+  const { loading } = useSelector((state: RootState) => state.auth);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       email: "",
       password: "",
       gender: "",
-      name: ""
+      name: "",
     },
-    mode: 'onChange'
+    mode: "onChange",
   });
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
@@ -59,17 +60,20 @@ function RegisterPage() {
           email: data.email,
           password: data.password,
           gender: data.gender as "male" | "female",
-          name: data.name
+          name: data.name,
         })
       );
 
-      if (response.meta.requestStatus === "fulfilled" && response?.payload?.success) {
+      if (
+        response.meta.requestStatus === "fulfilled" &&
+        response?.payload?.success
+      ) {
         toast({
           title: response.payload.message,
           variant: "success",
         });
-        navigate('/login')
-      } else {  
+        navigate("/login");
+      } else {
         toast({
           title: response?.payload?.response?.data?.message,
           variant: "destructive",
@@ -142,35 +146,43 @@ function RegisterPage() {
             )}
           />
           <FormField
-          control={form.control}
-          name="gender"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Gender</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger className="focus-visible:ring-violet-700 focus-visible:ring-1">
-                    <SelectValue placeholder="Choose your gender"/>
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Gender</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="focus-visible:ring-violet-700 focus-visible:ring-1">
+                      <SelectValue placeholder="Choose your gender" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <Button
+            disabled={loading}
             type="submit"
             className="w-full bg-violet-700 hover:bg-violet-400"
           >
-            Register
+            Register{" "}
+            {loading && <ReloadIcon className="ml-2 h-4 w-4 animate-spin" />}
           </Button>
           <p className="text-sm text-center select-none">
             Already have an account?{" "}
-            <span className="font-bold text-violet-700 transition-all duration-300 hover:underline hover:cursor-pointer" onClick={() => navigate('/login')}>
+            <span
+              className="font-bold text-violet-700 transition-all duration-300 hover:underline hover:cursor-pointer"
+              onClick={() => navigate("/login")}
+            >
               Sign In
             </span>
           </p>

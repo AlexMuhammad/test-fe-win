@@ -1,6 +1,7 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../redux/index";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import {
   Form,
   FormControl,
@@ -12,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
-import {useNavigate} from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import { checkMail } from "@/lib/regex";
 import { useToast } from "@/components/ui/use-toast";
 import { loginUser } from "@/redux/auth.slice";
@@ -32,12 +33,14 @@ function LoginPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
+  const { loading } = useSelector((state: RootState) => state.auth);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       email: "",
       password: "",
     },
+    mode: "onChange",
   });
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
@@ -49,14 +52,17 @@ function LoginPage() {
         })
       );
 
-      if (response.meta.requestStatus === "fulfilled" && response?.payload?.success) {
+      if (
+        response.meta.requestStatus === "fulfilled" &&
+        response?.payload?.success
+      ) {
         putAccessToken(response.payload.token);
         toast({
           title: response.payload.message,
           variant: "success",
         });
-        navigate('/')
-      } else {  
+        navigate("/");
+      } else {
         toast({
           title: response?.payload?.response?.data?.message,
           variant: "destructive",
@@ -112,14 +118,18 @@ function LoginPage() {
             )}
           />
           <Button
+            disabled={loading}
             type="submit"
             className="w-full bg-violet-700 hover:bg-violet-400"
           >
-            Login
+            Login {loading && <ReloadIcon className="ml-2 h-4 w-4 animate-spin" />}
           </Button>
           <p className="text-sm text-center select-none">
             Don't have an account?{" "}
-            <span className="font-bold text-violet-700 transition-all duration-300 hover:underline hover:cursor-pointer" onClick={() => navigate('/register')}>
+            <span
+              className="font-bold text-violet-700 transition-all duration-300 hover:underline hover:cursor-pointer"
+              onClick={() => navigate("/register")}
+            >
               Sign up
             </span>
           </p>
